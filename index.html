@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shot List Generator - Professional Storyboarding</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            letter-spacing: -1px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .card.input-card {
+            animation-delay: 0.1s;
+        }
+
+        .card.output-card {
+            animation-delay: 0.2s;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card h2 i {
+            font-size: 1.75rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 200px;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #a0aec0;
+            font-style: italic;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-state {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-state.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        .output-content {
+            display: none;
+        }
+
+        .output-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .story-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .story-section h3 {
+            font-size: 1.2rem;
+            color: #764ba2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            color: #4a5568;
+            font-size: 1rem;
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .shots-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .shot-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .shot-card:hover {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
+        }
+
+        .shot-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .shot-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .shot-detail {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .shot-detail-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .shot-detail-value {
+            font-size: 1rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .shot-description {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .error-alert {
+            display: none;
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            color: #c53030;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .error-alert.active {
+            display: block;
+        }
+
+        .error-alert strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-alert {
+            display: none;
+            background: #c6f6d5;
+            border: 2px solid #81e6d9;
+            color: #22543d;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .success-alert.active {
+            display: block;
+        }
+
+        .copy-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .copy-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .download-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e2e8f0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            flex: 1;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .char-count {
+            font-size: 0.85rem;
+            color: #a0aec0;
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .char-count.warning {
+            color: #ed8936;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #a0aec0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .shot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .shot-details {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-film"></i> Shot List Generator</h1>
+            <p>Transform your creative ideas into professional cinematic storyboards</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Card -->
+            <div class="card input-card">
+                <h2><i class="ti ti-edit"></i> Your Story Idea</h2>
+                
+                <div class="input-group">
+                    <label for="storyInput">Describe your concept:</label>
+                    <textarea 
+                        id="storyInput"
+                        placeholder="Give me the shotlist for making an ad on a soapbar that shows how it transforms a mundane morning routine into a luxurious spa experience..."
+                    ></textarea>
+                    <div class="char-count">
+                        <span>Characters: <span id="charCount">0</span></span>
+                        <span id="charWarning"></span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="generateBtn">
+                    <i class="ti ti-play"></i> Generate Shot List
+                </button>
+            </div>
+
+            <!-- Output Card -->
+            <div class="card output-card">
+                <h2><i class="ti ti-camera"></i> Your Storyboard</h2>
+                
+                <div class="error-alert" id="errorAlert"></div>
+                <div class="success-alert" id="successAlert"></div>
+
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Creating your storyboard...</div>
+                    <div class="loading-subtext">Generating cinematic story and shot list</div>
+                </div>
+
+                <div class="output-content" id="outputContent">
+                    <div class="empty-state" id="emptyState">
+                        <i class="ti ti-inbox"></i>
+                        <p>Your generated storyboard will appear here</p>
+                    </div>
+
+                    <div class="story-section" id="storySection" style="display: none;">
+                        <h3><i class="ti ti-book-2"></i> Cinematic Story</h3>
+                        <div class="story-text" id="storyText"></div>
+                    </div>
+
+                    <div id="shotsSection" style="display: none;">
+                        <h3 style="font-size: 1.2rem; color: #764ba2; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="ti ti-photo"></i> Shot List
+                        </h3>
+                        <div class="shots-container" id="shotsContainer"></div>
+                    </div>
+
+                    <div class="download-section" id="downloadSection" style="display: none;">
+                        <button class="btn btn-secondary" id="downloadJsonBtn">
+                            <i class="ti ti-download"></i> Download JSON
+                        </button>
+                        <button class="btn btn-secondary" id="downloadCsvBtn">
+                            <i class="ti ti-download"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000'; // Change this to your backend URL
+        
+        const storyInput = document.getElementById('storyInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loadingState = document.getElementById('loadingState');
+        const outputContent = document.getElementById('outputContent');
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const charCount = document.getElementById('charCount');
+        const charWarning = document.getElementById('charWarning');
+
+        // Update character count
+        storyInput.addEventListener('input', () => {
+            const count = storyInput.value.length;
+            charCount.textContent = count;
+            
+            if (count > 2000) {
+                charWarning.textContent = 'Consider keeping it under 2000 characters';
+                document.querySelector('.char-count').classList.add('warning');
+            } else {
+                charWarning.textContent = '';
+                document.querySelector('.char-count').classList.remove('warning');
+            }
+        });
+
+        // Generate shots
+        generateBtn.addEventListener('click', async () => {
+            const storyText = storyInput.value.trim();
+
+            if (!storyText) {
+                showError('Please enter your story idea');
+                return;
+            }
+
+            await generateShots(storyText);
+        });
+
+        async function generateShots(text) {
+            generateBtn.disabled = true;
+            loadingState.classList.add('active');
+            outputContent.classList.add('active');
+            hideError();
+            hideSuccess();
+
+            const messages = [
+                'Creating your storyboard...',
+                'Crafting the narrative...',
+                'Designing camera movements...',
+                'Finalizing shots...'
+            ];
+            let messageIndex = 0;
+
+            const messageInterval = setInterval(() => {
+                if (messageIndex < messages.length - 1) {
+                    document.querySelector('.loading-text').textContent = messages[++messageIndex];
+                }
+            }, 2000);
+
+            try {
+                console.log('Starting fetch to:', `${API_URL}/generate-shots`);
+                
+                const response = await fetch(`${API_URL}/generate-shots`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        story_text: text
+                    })
+                });
+
+                clearInterval(messageInterval);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Data received:', data);
+                displayResults(data);
+                showSuccess('Storyboard generated successfully!');
+
+            } catch (error) {
+                clearInterval(messageInterval);
+                console.error('Full error:', error);
+                
+                let errorMessage = error.message;
+                
+                // Better error messages
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '❌ Cannot connect to backend. Is it running on ' + API_URL + '?';
+                } else if (error.message.includes('TypeError')) {
+                    errorMessage = '❌ Network error - check your API_URL is correct';
+                }
+                
+                showError(errorMessage);
+            } finally {
+                generateBtn.disabled = false;
+                loadingState.classList.remove('active');
+            }
+        }
+
+        function displayResults(data) {
+            // Display story
+            document.getElementById('storyText').textContent = data.final_story;
+            document.getElementById('storySection').style.display = 'block';
+
+            // Display shots
+            const shotsContainer = document.getElementById('shotsContainer');
+            shotsContainer.innerHTML = '';
+
+            data.shot_list.forEach((shot, index) => {
+                const shotCard = document.createElement('div');
+                shotCard.className = 'shot-card';
+                shotCard.style.animationDelay = `${index * 0.1}s`;
+                
+                shotCard.innerHTML = `
+                    <div class="shot-number">${shot.shot_no}</div>
+                    <div class="shot-details">
+                        <div class="shot-detail">
+                            <div class="shot-detail-label">Camera Angle</div>
+                            <div class="shot-detail-value">${shot.camera_angle}</div>
+                        </div>
+                        <div class="shot-detail">
+                            <div class="shot-detail-label">Lens</div>
+                            <div class="shot-detail-value">${shot.lens}</div>
+                        </div>
+                    </div>
+                    <div class="shot-description">
+                        <strong>Description:</strong><br>${shot.description}
+                    </div>
+                `;
+                
+                shotsContainer.appendChild(shotCard);
+            });
+
+            document.getElementById('shotsSection').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('downloadSection').style.display = 'flex';
+
+            // Setup download buttons
+            setupDownloads(data);
+        }
+
+        function setupDownloads(data) {
+            document.getElementById('downloadJsonBtn').addEventListener('click', () => {
+                downloadJSON(data);
+            }, { once: true });
+
+            document.getElementById('downloadCsvBtn').addEventListener('click', () => {
+                downloadCSV(data);
+            }, { once: true });
+        }
+
+        function downloadJSON(data) {
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `storyboard-${new Date().getTime()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCSV(data) {
+            let csv = 'Shot#,Camera Angle,Lens,Description\n';
+            
+            data.shot_list.forEach(shot => {
+                const description = shot.description.replace(/"/g, '""').replace(/\n/g, ' ');
+                csv += `${shot.shot_no},"${shot.camera_angle}","${shot.lens}","${description}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `storyboard-${new Date().getTime()}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showError(message) {
+            errorAlert.textContent = message;
+            errorAlert.classList.add('active');
+        }
+
+        function hideError() {
+            errorAlert.classList.remove('active');
+        }
+
+        function showSuccess(message) {
+            successAlert.textContent = message;
+            successAlert.classList.add('active');
+            setTimeout(() => hideSuccess(), 3000);
+        }
+
+        function hideSuccess() {
+            successAlert.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
