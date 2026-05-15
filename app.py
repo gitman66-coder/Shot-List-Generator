@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from groq import Groq
@@ -38,7 +39,7 @@ class StoryBoard(BaseModel):
 
 @app.get("/")
 def home():
-    return {"Shot List" : "Generator"}
+    return FileResponse("index.html")
 
 @app.post("/generate-shots", response_model = StoryBoard)
 def generate_shots(text: Text):
